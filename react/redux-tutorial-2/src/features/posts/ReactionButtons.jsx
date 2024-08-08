@@ -1,7 +1,5 @@
 import { useDispatch } from "react-redux";
 import { reactionAdded } from "./postsSlice";
-import { roundToNearestMinutesWithOptions } from "date-fns/fp/roundToNearestMinutesWithOptions";
-
 
 const reactionEmoji = {
     thumbsUp: '👍🏻',
@@ -14,9 +12,7 @@ const reactionEmoji = {
 export default function ReactionButtons({ post }) {
     const dispatch = useDispatch();
 
-    console.log(Object.entries(reactionEmoji));
     const reactionButtons = Object.entries(reactionEmoji).map(([name, emoji]) => {
-        console.log(name, emoji);
         return (
             <button
                 key={name}
