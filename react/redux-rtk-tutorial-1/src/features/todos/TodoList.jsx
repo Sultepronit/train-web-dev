@@ -19,9 +19,9 @@ export default function TodoList() {
         error
     } = useGetTodosQuery();
 
-    const [addTodo] = useAddTodoMutation();
-    const [updateTodo] = useUpdateTodoMutation();
-    const [deleteTodo] = useDeleteTodoMutation();
+    const [addTodo] = useAddTodoMutation({ fixedCacheKey: 'status-bar' });
+    const [updateTodo] = useUpdateTodoMutation({ fixedCacheKey: 'status-bar' });
+    const [deleteTodo] = useDeleteTodoMutation({ fixedCacheKey: 'status-bar' });
 
     function handleSubmit(e) {
         e.preventDefault();
