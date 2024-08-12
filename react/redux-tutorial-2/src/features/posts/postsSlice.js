@@ -1,6 +1,7 @@
 import { createSlice, nanoid, createAsyncThunk } from '@reduxjs/toolkit';
 import { sub } from 'date-fns';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
 
 const POST_URL = 'https://jsonplaceholder.typicode.com/posts';
 
@@ -18,19 +19,58 @@ const initialState = {
     error: null
 };
 
+const fetchExperiment = createAsyncThunk('fetch/experiment', async (url) => {
+    const response = await fetch(url);
+    // const date = await response.json();
+    return await response.json();
+});
+
+// export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
+//     // try {
+//     //     const response = await axios.get(POST_URL);
+//     //     return [...response.data];
+//     // } catch (err) {
+//     //     return err.message;
+//     // }
+//     const response = await axios.get(POST_URL);
+//     return response.data;
+// });
+
+async function useFetchExperiment() {
+    const dispatch = useDispatch();
+    return await dispatch(fetchExperiment(POST_URL)).unwrap();
+}
+
+async function fetchExperiment2() {
+    try {
+        const response = await fetch(POST_URL);
+        return await response.json();
+    } catch (error) {
+        return await fetchExperiment2();
+    }
+}
+
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
-    // try {
-    //     const response = await axios.get(POST_URL);
-    //     return [...response.data];
-    // } catch (err) {
-    //     return err.message;
-    // }
-    const response = await axios.get(POST_URL);
+    // const response = await axios.get(POST_URL);
+    // return response.data;
+    // const dispatch = useDispatch();
+    // return await dispatch(fetchExperiment(POST_URL)).unwrap();
+    // console.log(fetchExperiment);
+    
+    // const date = await response.json();
+
+    // return await fetchExperiment2();
+    return await useFetchExperiment();
+});
+
+
+export const addNewPost = createAsyncThunk('posts/addNewPost', async (initialPost) => {
+    const response = await axios.post(POST_URL, initialPost);
     return response.data;
 });
 
-export const addNewPost = createAsyncThunk('posts/addNewPost', async(initialPost) => {
-    const response = await axios.post(POST_URL, initialPost);
+export const updatePost = createAsyncThunk('posts/updatePost', async (initialPost) => {
+    const response = await axios.put(`${POST_URL}/${initialPost.id}`);
     return response.data;
 });
 
@@ -70,6 +110,8 @@ const postsSlice = createSlice({
             })
             .addCase(fetchPosts.fulfilled, (state, action) => {
                 state.status = 'succeeded';
+                console.log('fulfilled?');
+                console.log(action.payload);
 
                 // to add dates and reactions to our fake posts
                 let min = 1;
@@ -96,6 +138,19 @@ const postsSlice = createSlice({
 
                 console.log(action.payload);
                 state.posts.push(action.payload);
+            })
+            .addCase(updatePost.fulfilled, (state, action) => {
+                if (!action.payload?.id) {
+                    console.log('Not updated!');
+                    console.log(action.payload);
+                    return;
+                }
+                action.payload.date = new Date().toISOString();
+                const posts = state.posts.filter(post => post.id !== action.payload.id);
+                state.posts = [...posts, action.payload];
+            })
+            .addMatcher((action) => true, (state, action) => {
+                console.log(action);
             });
     }
 });
@@ -103,6 +158,9 @@ const postsSlice = createSlice({
 export const selectAllPosts = (state) => state.posts.posts;
 export const getFetchStatus = (state) => state.posts.status;
 export const getFetchError = (state) => state.posts.error;
+
+export const selectPostById = (state, postId) =>
+    state.posts.posts.find(post => post.id === postId);
 
 export const { postAdded, reactionAdded } = postsSlice.actions;
 
