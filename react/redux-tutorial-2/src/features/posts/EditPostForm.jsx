@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { selectPostById, updatePost } from "./postsSlice";
+import { deletePost, selectPostById, updatePost } from "./postsSlice";
 import { selectAllUsers } from "../users/usereSlice";
 
 export default function EditPostForm() {
@@ -41,6 +41,20 @@ export default function EditPostForm() {
             navigate(`/post/${postId}`);
         } catch (error) {
             console.error('Failed to update the post', error);
+        } finally {
+            setRequestStatus('idle');
+        }
+    }
+
+    function onDeletePostClicked() {
+        try {
+            setRequestStatus('pending');
+            dispatch(deletePost({ id: post.id })).unwrap();
+
+            // do we need to update inputs, if we just move away???
+            navigate('/');
+        } catch (error) {
+            console.error('Failed to delete the post:', error);
         } finally {
             setRequestStatus('idle');
         }
@@ -92,6 +106,14 @@ export default function EditPostForm() {
                     disabled={!canSave}
                 >
                     Save Post
+                </button>
+
+                <button
+                    className="deleteButton"
+                    type="button"
+                    onClick={onDeletePostClicked}
+                >
+                    Delete Post
                 </button>
             </form>
         </section>

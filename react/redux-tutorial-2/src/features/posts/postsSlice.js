@@ -1,7 +1,6 @@
 import { createSlice, nanoid, createAsyncThunk } from '@reduxjs/toolkit';
 import { sub } from 'date-fns';
 import axios from 'axios';
-import { useDispatch } from 'react-redux';
 
 const POST_URL = 'https://jsonplaceholder.typicode.com/posts';
 
@@ -19,50 +18,16 @@ const initialState = {
     error: null
 };
 
-const fetchExperiment = createAsyncThunk('fetch/experiment', async (url) => {
-    const response = await fetch(url);
-    // const date = await response.json();
-    return await response.json();
-});
-
-// export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
-//     // try {
-//     //     const response = await axios.get(POST_URL);
-//     //     return [...response.data];
-//     // } catch (err) {
-//     //     return err.message;
-//     // }
-//     const response = await axios.get(POST_URL);
-//     return response.data;
-// });
-
-async function useFetchExperiment() {
-    const dispatch = useDispatch();
-    return await dispatch(fetchExperiment(POST_URL)).unwrap();
-}
-
-async function fetchExperiment2() {
-    try {
-        const response = await fetch(POST_URL);
-        return await response.json();
-    } catch (error) {
-        return await fetchExperiment2();
-    }
-}
-
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
-    // const response = await axios.get(POST_URL);
-    // return response.data;
-    // const dispatch = useDispatch();
-    // return await dispatch(fetchExperiment(POST_URL)).unwrap();
-    // console.log(fetchExperiment);
-    
-    // const date = await response.json();
-
-    // return await fetchExperiment2();
-    return await useFetchExperiment();
+    // try {
+    //     const response = await axios.get(POST_URL);
+    //     return [...response.data];
+    // } catch (err) {
+    //     return err.message;
+    // }
+    const response = await axios.get(POST_URL);
+    return response.data;
 });
-
 
 export const addNewPost = createAsyncThunk('posts/addNewPost', async (initialPost) => {
     const response = await axios.post(POST_URL, initialPost);
@@ -70,8 +35,15 @@ export const addNewPost = createAsyncThunk('posts/addNewPost', async (initialPos
 });
 
 export const updatePost = createAsyncThunk('posts/updatePost', async (initialPost) => {
-    const response = await axios.put(`${POST_URL}/${initialPost.id}`);
+    const response = await axios.put(`${POST_URL}/${initialPost.id}`, initialPost);
+    console.log(response);
     return response.data;
+});
+
+export const deletePost = createAsyncThunk('posts/deletePost', async (initialPost) => {
+    const response = await axios.delete(`${POST_URL}/${initialPost.id}`);
+    if (response?.status === 200) return initialPost;
+    return `${response?.status}: ${response?.statusText}`;
 });
 
 const postsSlice = createSlice({
@@ -147,11 +119,21 @@ const postsSlice = createSlice({
                 }
                 action.payload.date = new Date().toISOString();
                 const posts = state.posts.filter(post => post.id !== action.payload.id);
+                console.log(action.payload);
                 state.posts = [...posts, action.payload];
             })
-            .addMatcher((action) => true, (state, action) => {
-                console.log(action);
+            .addCase(deletePost.fulfilled, (state, action) => {
+                if (!action.payload?.id) {
+                    console.log('Not deleted!');
+                    console.log(action.payload);
+                    return;
+                }
+                const posts = state.posts.filter(post => post.id !== action.payload.id);
+                state.posts = posts;
             });
+            // .addMatcher((action) => true, (state, action) => {
+            //     console.log(action);
+            // });
     }
 });
 
