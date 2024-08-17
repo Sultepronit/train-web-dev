@@ -35,9 +35,14 @@ export const addNewPost = createAsyncThunk('posts/addNewPost', async (initialPos
 });
 
 export const updatePost = createAsyncThunk('posts/updatePost', async (initialPost) => {
-    const response = await axios.put(`${POST_URL}/${initialPost.id}`, initialPost);
-    console.log(response);
-    return response.data;
+    try {
+        const response = await axios.put(`${POST_URL}/${initialPost.id}`, initialPost);
+        console.log(response);
+        return response.data;
+    } catch (error) {
+        // our fake api return error, 500 for no-existing id
+        return initialPost;
+    }
 });
 
 export const deletePost = createAsyncThunk('posts/deletePost', async (initialPost) => {
@@ -77,7 +82,7 @@ const postsSlice = createSlice({
     },
     extraReducers(builder) {
         builder
-            .addCase(fetchPosts.pending, (state, action) => {
+            .addCase(fetchPosts.pending, (state) => {
                 state.status = 'loading';
             })
             .addCase(fetchPosts.fulfilled, (state, action) => {
