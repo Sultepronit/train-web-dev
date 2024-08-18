@@ -35,9 +35,9 @@ export default function EditPostForm() {
             setRequestStatus('pending');
             dispatch(updatePost({ id: post.id, title, body: content, userId, reactions: post.reactions })).unwrap();
 
-            setTitle('');
-            setContent('');
-            setUserId('');
+            // setTitle('');
+            // setContent('');
+            // setUserId('');
             navigate(`/post/${postId}`);
         } catch (error) {
             console.error('Failed to update the post', error);
@@ -86,7 +86,7 @@ export default function EditPostForm() {
                 <select
                     id="postAuthor"
                     defaultValue={userId}
-                    onChange={(e) => setUserId(e.target.value)}
+                    onChange={(e) => setUserId(Number(e.target.value))}
                 >
                     <option value=""></option>
                     {usersOptions}
