@@ -6,12 +6,12 @@ import { store } from './app/store.js';
 import { Provider } from 'react-redux';
 import { fetchUsers } from './features/users/usereSlice.js';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { fetchPosts } from './features/posts/postsSlice.js';
+// import { fetchPosts } from './features/posts/postsSlice.js';
+import { extendedApiSlice } from './features/posts/postsSlice.js';
 
-// first thing fetch users!
 store.dispatch(fetchUsers());
-// and of course, fetch posts or they wouldn't be available on other pages than main!
-store.dispatch(fetchPosts());
+// store.dispatch(fetchPosts());
+store.dispatch(extendedApiSlice.endpoints.getPosts.initiate());
 
 ReactDOM.createRoot(document.getElementById('root')).render(  
   <React.StrictMode>
