@@ -8,18 +8,12 @@ const postsAdapter = createEntityAdapter({
     sortComparer: (a, b) => b.date.localeCompare(a.date)
 });
 
-// const initialState = {
-//     posts: [],
-//     status: 'idle', // idle, loading, succeeded, failed
-//     error: null,
-//     count: 0
-// };
-
-const initialState = postsAdapter.getInitialState({
+const initialState = {
+    posts: [],
     status: 'idle', // idle, loading, succeeded, failed
     error: null,
     count: 0
-});
+};
 
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
     // try {
@@ -66,10 +60,26 @@ const postsSlice = createSlice({
     name: 'posts',
     initialState,
     reducers: {
+        // postAdded: {
+        //     reducer(state, action) {
+        //         state.posts.push(action.payload)
+        //     },
+        //     prepare(title, content, userId) {
+        //         return {
+        //             payload: {
+        //                 id: nanoid(),
+        //                 title,
+        //                 content,
+        //                 date: new Date().toISOString(),
+        //                 userId,
+        //                 reactions
+        //             }
+        //         };
+        //     }
+        // },
         reactionAdded(state, action) {
             const { postId, reaction } = action.payload;
-            // const existingPost = state.posts.find(post => post.id === postId);
-            const existingPost = state.entities[postId];
+            const existingPost = state.posts.find(post => post.id === postId);
             if(existingPost) {
                 existingPost.reactions[reaction]++;
             }
@@ -96,8 +106,11 @@ const postsSlice = createSlice({
                     return post;
                 });
 
-                // state.posts = loadedPosts;
-                postsAdapter.upsertMany(state, loadedPosts);
+                // updated current posts with loaded posts
+                // state.posts = state.posts.concat(loadedPosts);
+                // better this way
+                state.posts = loadedPosts;
+                console.log(state.posts);
             })
             .addCase(fetchPosts.rejected, (state, action) => {
                 state.status = 'falied';
@@ -109,8 +122,7 @@ const postsSlice = createSlice({
                 action.payload.reactions = reactions;
 
                 console.log(action.payload);
-                // state.posts.push(action.payload);
-                postsAdapter.addOne(state, action.payload);
+                state.posts.push(action.payload);
             })
             .addCase(updatePost.fulfilled, (state, action) => {
                 if (!action.payload?.id) {
@@ -119,10 +131,9 @@ const postsSlice = createSlice({
                     return;
                 }
                 action.payload.date = new Date().toISOString();
+                const posts = state.posts.filter(post => post.id !== action.payload.id);
                 console.log(action.payload);
-                // const posts = state.posts.filter(post => post.id !== action.payload.id);
-                // state.posts = [...posts, action.payload];
-                postsAdapter.upsertOne(state, action.payload);
+                state.posts = [...posts, action.payload];
             })
             .addCase(deletePost.fulfilled, (state, action) => {
                 if (!action.payload?.id) {
@@ -130,9 +141,8 @@ const postsSlice = createSlice({
                     console.log(action.payload);
                     return;
                 }
-                // const posts = state.posts.filter(post => post.id !== action.payload.id);
-                // state.posts = posts;
-                postsAdapter.removeOne(state, action.payload.id);
+                const posts = state.posts.filter(post => post.id !== action.payload.id);
+                state.posts = posts;
             });
             // .addMatcher((action) => true, (state, action) => {
             //     console.log(action);
@@ -140,20 +150,13 @@ const postsSlice = createSlice({
     }
 });
 
-// export const selectAllPosts = (state) => state.posts.posts;
-// export const selectPostById = (state, postId) =>
-//     state.posts.posts.find(post => post.id === postId);
-
-export const {
-    selectAll: selectAllPosts,
-    selectById: selectPostById,
-    selectIds: selectPostIds
-
-} = postsAdapter.getSelectors(state => state.posts);
-
+export const selectAllPosts = (state) => state.posts.posts;
 export const getFetchStatus = (state) => state.posts.status;
 export const getFetchError = (state) => state.posts.error;
 export const getCount = (state) => state.posts.count;
+
+export const selectPostById = (state, postId) =>
+    state.posts.posts.find(post => post.id === postId);
 
 export const selectPostsByUser = createSelector(
     [selectAllPosts, (state, userId) => userId],

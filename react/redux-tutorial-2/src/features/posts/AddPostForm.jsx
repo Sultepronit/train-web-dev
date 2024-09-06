@@ -3,15 +3,17 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { addNewPost } from "./postsSlice";
 import { selectAllUsers } from "../users/usereSlice";
+import { useNavigate } from "react-router-dom";
 
 export default function AddPostForm() {
     const dispatch = useDispatch();
+
+    const navigate = useNavigate();
     
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [userId, setUserId] = useState('');
     const [addRequestStatus, setAddRequestStatus] = useState('idle');
-
 
     const users = useSelector(selectAllUsers);
 
@@ -25,9 +27,11 @@ export default function AddPostForm() {
                 setAddRequestStatus('pending');
                 dispatch(addNewPost({ title, body: content, userId })).unwrap(); // should throw an error if the promise is rejected
 
-                setTitle('');
-                setContent('');
-                setUserId('');
+                // do we need these???
+                // setTitle('');
+                // setContent('');
+                // setUserId('');
+                navigate('/');
             } catch (error) {  
                 console.error(error);
             } finally {

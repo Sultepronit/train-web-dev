@@ -1,0 +1,25 @@
+.status-bar {
+    margin: 0;
+    height: 3px;
+}
+
+.loading {
+    background-color: greenyellow;
+}
+
+.failed {
+    background-color: red;
+}
+
+.error-messages {
+    position: absolute;
+    width: 95.1%;
+    margin: 0.5rem 2%;
+    border: 2px solid red;
+    background-color: #ffc4c4f2;
+}
+
+.error-messages p {
+    margin: 0;
+    padding: 0.5em;
+}
