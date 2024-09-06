@@ -1,0 +1,17 @@
+{
+  "name": "mern-tutorial-1",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "techNotes MERN Project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "dev": "node --watch server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
