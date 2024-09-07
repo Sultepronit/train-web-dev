@@ -16,29 +16,87 @@ const reactions = {
     coffee: 0
 };
 
+function transformFakeApiData(responseData) {
+    let min = 1;
+    const loadedPosts = responseData.map(post => {
+        if (!post?.date) post.date = sub(new Date(), { minutes: min++ }).toISOString();
+        if (!post?.reactions) post.reactions = reactions;
+        return post;
+    });
+    return loadedPosts;
+}
+
 export const extendedApiSlice = apiSlice.injectEndpoints({
     endpoints: builder => ({
         getPosts: builder.query({
             query: () => '/posts',
             transformResponse: responseData => {
-                let min = 1;
-                const loadedPosts = responseData.map(post => {
-                    if (!post?.date) post.date = sub(new Date(), { minutes: min++ }).toISOString();
-                    if (!post?.reactions) post.reactions = reactions;
-                    return post;
-                });
+                const loadedPosts = transformFakeApiData(responseData);
                 return postsAdapter.setAll(initialState, loadedPosts);
             },
             providesTags: (result, error, arg) => [
                 { type: 'Post', id: 'LIST' },
                 ...result.ids.map(id => ({ type: 'Post', id }))
             ]
+        }),
+        getPostsByUserId: builder.query({
+            query: id => `/posts/?userId=${id}`,
+            transformResponse: responseData => {
+                const loadedPosts = transformFakeApiData(responseData);
+                return postsAdapter.setAll(initialState, loadedPosts);
+            },
+            providesTags: (result, error, arg) => {
+                console.log(result);
+                return result.ids.map(id => ({ type: 'Post', id }));
+            }
+        }),
+        addNewPost: builder.mutation({
+            query: initialPost => ({
+                url: '/posts',
+                method: 'POST',
+                body: {
+                    ...initialPost,
+                    userId: Number(initialPost.userId),
+                    date: new Date().toISOString(),
+                    reactions
+                }
+            }),
+            invalidatesTags: [
+                { type: 'Post', id: 'LIST' }
+            ]
+        }),
+        updatePost: builder.mutation({
+            query: initialPost => ({
+                url: `/posts/${initialPost.id}`,
+                method: 'PUT',
+                body: {
+                    ...initialPost,
+                    date: new Date().toISOString()
+                }
+            }),
+            invalidatesTags: (result, error, arg) => [
+                { type: 'Post', id: arg.id }
+            ]
+        }),
+        deletePost: builder.mutation({
+            query: ({ id }) => ({
+                url: `/posts/${id}`,
+                method: 'DELETE',
+                body: { id } // do we really need it?..
+            }),
+            invalidatesTags: (result, error, arg) => [
+                { type: 'Post', id: arg.id }
+            ]
         })
-    })
+    }),
 });
 
 export const {
-    useGetPostsQuery
+    useGetPostsQuery,
+    useGetPostsByUserIdQuery,
+    useAddNewPostMutation,
+    useUpdatePostMutation,
+    useDeletePostMutaton,
 } = extendedApiSlice;
 
 // returns the query result object
