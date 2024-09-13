@@ -120,6 +120,10 @@ export const {
     useAddReactionMutation
 } = extendedApiSlice;
 
+console.log('here we go!');
+console.log(extendedApiSlice);
+console.log(useGetPostsQuery);
+
 // returns the query result object
 export const selectPostsResult = extendedApiSlice.endpoints.getPosts.select();
 

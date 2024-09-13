@@ -9,7 +9,7 @@ export default function PostAuthor({ userId }) {
 
     return (
         <span>
-            by {author ? <Link to={`/user/${userId}`}>author.name</Link> : 'Unknown Author'}
+            by {author ? <Link to={`/user/${userId}`}>{author.name}</Link> : 'Unknown Author'}
         </span>
     );
 }
