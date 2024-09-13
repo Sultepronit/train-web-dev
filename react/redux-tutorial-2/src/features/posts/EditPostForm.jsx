@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { deletePost, selectPostById, updatePost } from "./postsSlice";
 import { selectAllUsers } from "../users/usereSlice";
+import { selectPostById, useUpdatePostMutation, useDeletePostMutation } from "./postsSlice";
 
 export default function EditPostForm() {
     const { postId } = useParams();
     const navigate = useNavigate();
+
+    const [updatePost, { isLoading }] = useUpdatePostMutation();
+    const [deletePost] = useDeletePostMutation();
 
     const post = useSelector((state) => selectPostById(state, Number(postId)));
     const users = useSelector(selectAllUsers);
@@ -14,9 +17,6 @@ export default function EditPostForm() {
     const [title, setTitle] = useState(post?.title);
     const [content, setContent] = useState(post?.body);
     const [userId, setUserId] = useState(post?.userId);
-    const [requestStatus, setRequestStatus] = useState('idle');
-
-    const dispatch = useDispatch();
 
     if (!post) {
         return (
@@ -26,14 +26,13 @@ export default function EditPostForm() {
         )
     }
 
-    const canSave = [title, content, userId, (requestStatus === 'idle')].every(Boolean);
+    const canSave = [title, content, userId, !isLoading].every(Boolean);
 
-    function onSavePostClicked() {
+    async function onSavePostClicked() {
         if (!canSave) return;
 
         try {
-            setRequestStatus('pending');
-            dispatch(updatePost({ id: post.id, title, body: content, userId, reactions: post.reactions })).unwrap();
+            await updatePost({ id: post.id, title, body: content, userId }).unwrap();
 
             // setTitle('');
             // setContent('');
@@ -41,22 +40,17 @@ export default function EditPostForm() {
             navigate(`/post/${postId}`);
         } catch (error) {
             console.error('Failed to update the post', error);
-        } finally {
-            setRequestStatus('idle');
         }
     }
 
-    function onDeletePostClicked() {
+    async function onDeletePostClicked() {
         try {
-            setRequestStatus('pending');
-            dispatch(deletePost({ id: post.id })).unwrap();
+            await deletePost({ id: post.id }).unwrap();
 
             // do we need to update inputs, if we just move away???
             navigate('/');
         } catch (error) {
             console.error('Failed to delete the post:', error);
-        } finally {
-            setRequestStatus('idle');
         }
     }
 
