@@ -7,10 +7,13 @@ import prependPath from './helpers/prependPath.js';
 const app = express();
 const PORT = process.env.PORT || 3500;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+app.use(express.json());
 
-app.use('/', express.static(path.join(__dirname, 'public')));
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
+// app.use('/', express.static(path.join(__dirname, 'public')));
+app.use('/', express.static(prependPath(import.meta.url, 'public')));
 
 app.use('/', router); 
 
